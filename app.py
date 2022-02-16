@@ -1,83 +1,46 @@
 import pandas as pd
+import numpy as np
 import streamlit as st
 import plotly.express as px
 from PIL import Image
+import datetime
 
 st.set_page_config(page_title='Survey Results')
-st.header('Survey Results 2022')
-st.subheader('Tutorial')
+st.header('Eagle Projects Dashboard')
+st.subheader('Lot Specifics')
 
 # Load Dataframe
-excel_file = 'test1.xlsx'
-sheet_name = 'DATA'
+sheet_name = 'Lot Specifics'
+excel_file = 'tectest.xlsx'
 
 df = pd.read_excel(excel_file,
                     sheet_name=sheet_name,
-                    usecols='B:d',
-                    header=3)
+                    usecols='B:K',
+                    converters={'Lot #':str, 'Contract Date':str,'Actual':str},
+                    header=1)
 
-df_participants = pd.read_excel(excel_file,
+# df['Contract Date'] = pd.to_datetime(df['Contract Date'])
+# df['Contract Date'] = 'WTF'
+
+# for k in df.keys():
+#     st.info(k)
+#     st.info(type(k))
+
+
+# df['Contract Date'] = pd.to_datetime(df['Contract Date'])
+
+excel_file = 'test2.xlsx'
+sheet_name = 'DATA'
+df_2 = pd.read_excel(excel_file,
                                 sheet_name=sheet_name,
-                               usecols='F:G',
-                               header=3  )
+                               usecols='B:L',
+                               header=1)
+
+# Converting Date Time into Date
+df_2['Contract Date'] = pd.to_datetime(df_2['Contract Date']).dt.date
+df_2['Draft Deadline'] = pd.to_datetime(df_2['Draft Deadline']).dt.date
+df_2['Actual'] = pd.to_datetime(df_2['Actual']).dt.date
 
 st.dataframe(df)
-st.dataframe(df_participants)
-
-pie_chart = px.pie(df_participants,
-                    title='Total no. of participants',
-                    values='Participants',
-                    names='Departments')
-
-st.plotly_chart(pie_chart)
-
-df_participants.dropna(inplace=True)
-
-# --- STREAMLIT SELECTION
-department = df['Department'].unique().tolist()
-ages = df['Age'].unique().tolist()
-
-age_selection = st.slider('Age:',
-                        min_value= min(ages),
-                        max_value= max(ages),
-                        value=(min(ages),max(ages)))
-
-department_selection = st.multiselect('Department:',
-                                    department,
-                                    default=department)
-
-# --- FILTER DATAFRAME BASED ON SELECTION
-mask = (df['Age'].between(*age_selection)) & (df['Department'].isin(department_selection))
-number_of_result = df[mask].shape[0]
-st.markdown(f'*Available Results: {number_of_result}*')
-
-# --- GROUP DATAFRAME AFTER SELECTION
-df_grouped = df[mask].groupby(by=['Rating']).count()[['Age']]
-df_grouped = df_grouped.rename(columns={'Age': 'Votes'})
-df_grouped = df_grouped.reset_index()
-
-# --- PLOT BAR CHART
-bar_chart = px.bar(df_grouped,
-                   x='Rating',
-                   y='Votes',
-                   text='Votes',
-                   color_discrete_sequence = ['#F63366']*len(df_grouped),
-                   template= 'plotly_white')
-st.plotly_chart(bar_chart)
-
-# --- DISPLAY IMAGE & DATAFRAME
-col1, col2 = st.beta_columns(2)
-image = Image.open('images/survey.jpg')
-print(image)
-col1.image(image,
-        caption='Designed by slidesgo / Freepik',
-        use_column_width=True)
-col2.dataframe(df[mask])
-
-# --- PLOT PIE CHART
-pie_chart = px.pie(df_participants,
-                title='Total No. of Participants',
-                values='Participants',
-                names='Departments')
-
-st.plotly_chart(pie_chart)
+st.subheader('TEST2.XLSX')
+st.dataframe(df_2)
